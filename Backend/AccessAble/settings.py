@@ -81,12 +81,8 @@ WSGI_APPLICATION = "AccessAble.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'd2800446',
-        'USER': 's2800446',
-        'PASSWORD': 's2800446',
-        'HOST':'lamp.ms.wits.ac.za',
-        'PORT':'3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
