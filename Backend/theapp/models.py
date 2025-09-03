@@ -18,6 +18,8 @@ class AccessibilityMap(models.Model):##Map of location
 
 # models.py
 
+# models.py
+
 class JobPosting(models.Model):
     # core fields
     job_id = models.CharField(max_length=50, blank=True, null=True, unique=True)  
@@ -42,6 +44,7 @@ class JobPosting(models.Model):
 
     def __str__(self):
         return f"{self.title} at {self.company_name or 'Unknown'}"
+
 
 
 

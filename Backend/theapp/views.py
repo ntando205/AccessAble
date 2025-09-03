@@ -4,6 +4,10 @@ from rest_framework import permissions, viewsets
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authtoken.models import Token
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .services.map_scraper import fetch_and_save_healthcare_data
 
 
 from .serializers import *
@@ -55,6 +59,11 @@ class HealthcareFacilityViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows healthcare facilities to be viewed or edited.
     """
+    def post(self, request):
+        query = request.data.get("query", "healthcare for the blind")
+        result = fetch_and_save_healthcare_data(query)
+        return Response({"message": result}, status=status.HTTP_200_OK)
+
     queryset = HealthcareFacility.objects.all()
     serializer_class = HealthcareFacilitySerializer
     #permission_classes = [permissions.IsAuthenticated]
