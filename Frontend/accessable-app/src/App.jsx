@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import 'leaflet/dist/leaflet.css';
 import Home from './Home.jsx'
 import AccessibilityMap from './AccessibilityMap.jsx'
 import Jobs from './Jobs.jsx'

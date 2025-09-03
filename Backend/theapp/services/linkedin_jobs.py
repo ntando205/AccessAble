@@ -2,11 +2,10 @@
 import requests
 from datetime import datetime
 from ..models import JobPosting
-from Backend.AccessAble.settings import api_keyy
 
 
 def fetch_and_save_jobs(query="disability jobs", location="Johannesburg,South Africa"):
-    api_key = api_keyy
+    api_key = "68b85a6dd8a6124ad5827ce1"
     url = "https://api.scrapingdog.com/linkedinjobs"
 
     params = {

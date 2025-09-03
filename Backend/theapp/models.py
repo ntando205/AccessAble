@@ -46,13 +46,14 @@ class JobPosting(models.Model):
         return f"{self.title} at {self.company_name or 'Unknown'}"
 
 
-
-
 class HealthcareFacility(models.Model):
+    place_id = models.CharField(max_length=100,null=True,blank=True, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     address = models.CharField(max_length=255)
     location = models.ForeignKey(AccessibilityLocation, on_delete=models.CASCADE)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
     contact_number = models.CharField(max_length=20, blank=True, null=True)
     website = models.URLField(max_length=200, blank=True, null=True)
     
@@ -64,3 +65,7 @@ class HealthcareFacility(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.rating or 'No rating'})"
+
+
+
+

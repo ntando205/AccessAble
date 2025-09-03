@@ -8,7 +8,7 @@ router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'accessibility-locations', views.AccessibilityLocationViewSet)
 router.register(r'accessibility-maps', views.AccessibilityMapViewSet)
-router.register(r'job-postings', views.JobPostingViewSet)
+router.register(r'jobpostings', views.JobPostingViewSet)
 router.register(r'healthcare-facilities', views.HealthcareFacilityViewSet)
 
 # Wire up our API using automatic URL routing.
