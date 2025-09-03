@@ -11,18 +11,18 @@ from .serializers import *
 # Create your views here.
 
 
-class TokenQueryParamAuthentication(BaseAuthentication):
-    def authenticate(self, request):
-        token = request.GET.get('Token')
-        if not token:
-            raise AuthenticationFailed('Authentication credentials were not provided.')
+# class TokenQueryParamAuthentication(BaseAuthentication):
+#     def authenticate(self, request):
+#         token = request.GET.get('Token')
+#         if not token:
+#             raise AuthenticationFailed('Authentication credentials were not provided.')
         
-        try:
-            token_obj = Token.objects.get(key=token)
-        except Token.DoesNotExist:
-            raise AuthenticationFailed('Invalid token.')
+#         try:
+#             token_obj = Token.objects.get(key=token)
+#         except Token.DoesNotExist:
+#             raise AuthenticationFailed('Invalid token.')
         
-        return (token_obj.user, token_obj)
+#         return (token_obj.user, token_obj)
 
 class AccessibilityLocationViewSet(viewsets.ModelViewSet):
     """
@@ -30,8 +30,8 @@ class AccessibilityLocationViewSet(viewsets.ModelViewSet):
     """
     queryset = AccessibilityLocation.objects.all()
     serializer_class = AccessibilityLocationSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenQueryParamAuthentication]
+    #permission_classes = [permissions.IsAuthenticated]
+    #authentication_classes = [TokenQueryParamAuthentication]
 
 class AccessibilityMapViewSet(viewsets.ModelViewSet):
     """
@@ -39,8 +39,8 @@ class AccessibilityMapViewSet(viewsets.ModelViewSet):
     """
     queryset = AccessibilityMap.objects.all()
     serializer_class = AccessibilityMapSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenQueryParamAuthentication]
+    #permission_classes = [permissions.IsAuthenticated]
+    #authentication_classes = [TokenQueryParamAuthentication]
 
 class JobPostingViewSet(viewsets.ModelViewSet):
     """
@@ -48,8 +48,8 @@ class JobPostingViewSet(viewsets.ModelViewSet):
     """
     queryset = JobPosting.objects.all()
     serializer_class = JobPostingSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenQueryParamAuthentication]
+    #permission_classes = [permissions.IsAuthenticated]
+    #authentication_classes = [TokenQueryParamAuthentication]
 
 class HealthcareFacilityViewSet(viewsets.ModelViewSet):
     """
@@ -57,8 +57,8 @@ class HealthcareFacilityViewSet(viewsets.ModelViewSet):
     """
     queryset = HealthcareFacility.objects.all()
     serializer_class = HealthcareFacilitySerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenQueryParamAuthentication]
+    #permission_classes = [permissions.IsAuthenticated]
+    #authentication_classes = [TokenQueryParamAuthentication]
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -66,8 +66,8 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenQueryParamAuthentication]
+    #permission_classes = [permissions.IsAuthenticated]
+    #authentication_classes = [TokenQueryParamAuthentication]
 
 class GroupViewSet(viewsets.ModelViewSet):
     """
@@ -75,5 +75,5 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all().order_by('name')
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenQueryParamAuthentication]
+    #permission_classes = [permissions.IsAuthenticated]
+    #authentication_classes = [TokenQueryParamAuthentication]

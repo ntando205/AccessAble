@@ -39,20 +39,20 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "theapp",
     "rest_framework",
-    'rest_framework.authtoken',
+    #'rest_framework.authtoken',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',  # Token Authentication
-        'rest_framework_simplejwt.authentication.JWTAuthentication',  # Optional JWT
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',  # Ensure the user must be authenticated
-    ]
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'rest_framework.authentication.TokenAuthentication',  # Token Authentication
+    #     'rest_framework_simplejwt.authentication.JWTAuthentication',  # Optional JWT
+    # ],
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',  # Ensure the user must be authenticated
+    # ]
 }
 
 MIDDLEWARE = [
