@@ -7,7 +7,7 @@ python manage.py runserver
 ```
 ## Running the Frontend
 ```bash
-cd Frontend/
+cd Frontend/accessable-app/
 npm install
 npm run dev
 ```
