@@ -25,23 +25,27 @@ export default function GoogleMapComponent() {
   const [healthcareFacilities, setHealthcareFacilities] = useState([]);
   const [jobPostings, setJobPostings] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
+  const [mapCenter, setMapCenter] = useState(center);
 
   useEffect(() => {
     // Fetch healthcare facilities
     axios.get("http://127.0.0.1:8000/api/healthcare-facilities/")
       .then(res => {
-      console.log("Healthcare facilities:", res.data);
-      setHealthcareFacilities(res.data);
-    })
-    .catch(err => console.error(err));
-
+        console.log("Healthcare facilities with coordinates:", 
+          res.data.results.filter(f => f.latitude && f.longitude && f.latitude !== 0 && f.longitude !== 0)
+        );
+        setHealthcareFacilities(res.data.results);
+      })
+      .catch(err => console.error(err));
 
     // Fetch job postings
     axios.get("http://127.0.0.1:8000/api/jobpostings/")
       .then(res => {
-      console.log("Job postings:", res.data);
-      setJobPostings(res.data);
-    })
+        console.log("Job postings with coordinates:", 
+          res.data.results.filter(j => j.location?.latitude && j.location?.longitude && j.location.latitude !== 0 && j.location.longitude !== 0)
+        );
+        setJobPostings(res.data.results);
+      })
       .catch(err => console.error(err));
   }, []);
 
@@ -53,35 +57,47 @@ export default function GoogleMapComponent() {
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         zoom={12}
-        center={center}
+        center={mapCenter}
       >
-        {/* Healthcare Markers */}
+        {/* Healthcare Markers - only show those with valid coordinates */}
         {healthcareFacilities
-          .filter(f => f.latitude && f.longitude)
-          .map(f => (
+          .filter(f => f.latitude && f.longitude && f.latitude !== 0 && f.longitude !== 0)
+          .map((f, index) => (
             <Marker
-              key={`healthcare-${f.place_id || f.name}-${f.latitude}-${f.longitude}`}
+              key={`healthcare-${f.id || f.place_id || index}`}
               position={{
                 lat: Number(f.latitude),
                 lng: Number(f.longitude),
               }}
               icon={healthcareIcon}
-              onClick={() => setSelectedMarker({...f, type: 'healthcare'})}
+              onClick={() => {
+                setSelectedMarker({...f, type: 'healthcare'});
+                setMapCenter({
+                  lat: Number(f.latitude),
+                  lng: Number(f.longitude)
+                });
+              }}
             />
           ))}
 
-        {/* Job Markers */}
+        {/* Job Markers - only show those with valid coordinates */}
         {jobPostings
-          .filter(j => j.location?.latitude && j.location?.longitude)
-          .map(j => (
+          .filter(j => j.location?.latitude && j.location?.longitude && j.location.latitude !== 0 && j.location.longitude !== 0)
+          .map((j, index) => (
             <Marker
-              key={`job-${j.job_id || j.title}-${j.location.latitude}-${j.location.longitude}`}
+              key={`job-${j.id || j.job_id || index}`}
               position={{
                 lat: Number(j.location.latitude),
                 lng: Number(j.location.longitude),
               }}
               icon={jobIcon}
-              onClick={() => setSelectedMarker({...j, type: 'job'})}
+              onClick={() => {
+                setSelectedMarker({...j, type: 'job'});
+                setMapCenter({
+                  lat: Number(j.location.latitude),
+                  lng: Number(j.location.longitude)
+                });
+              }}
             />
           ))}
 
@@ -125,18 +141,24 @@ export default function GoogleMapComponent() {
       {/* List Views */}
       <h3>Healthcare Facilities</h3>
       <ul>
-        {healthcareFacilities.map(f => (
-          <li key={`healthcare-list-${f.place_id || f.name}`}>
+        {healthcareFacilities.map((f, index) => (
+          <li key={`healthcare-list-${f.id || f.place_id || index}`}>
             {f.name} — {f.address} {f.contact_number && ` — ${f.contact_number}`}
+            {(!f.latitude || !f.longitude || f.latitude === 0 || f.longitude === 0) && 
+              <span style={{color: 'red', marginLeft: '10px'}}>(No coordinates)</span>
+            }
           </li>
         ))}
       </ul>
 
       <h3>Job Postings</h3>
       <ul>
-        {jobPostings.map(j => (
-          <li key={`job-list-${j.job_id || j.title}`}>
+        {jobPostings.map((j, index) => (
+          <li key={`job-list-${j.id || j.job_id || index}`}>
             {j.title} — {j.company_name} — {j.location_text}
+            {(!j.location?.latitude || !j.location?.longitude || j.location.latitude === 0 || j.location.longitude === 0) && 
+              <span style={{color: 'red', marginLeft: '10px'}}>(No coordinates)</span>
+            }
           </li>
         ))}
       </ul>

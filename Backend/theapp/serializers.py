@@ -2,34 +2,54 @@ from django.contrib.auth.models import Group, User
 from .models import *
 from rest_framework import serializers
 
- 
- 
+
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = ['url', 'username', 'email', 'groups']
+
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Group
         fields = ['url', 'name']
 
-class AccessibilityLocationSerializer(serializers.HyperlinkedModelSerializer):
+
+class AccessibilityLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = AccessibilityLocation
-        fields = ['url', 'name', 'description', 'address', 'latitude', 'longitude']
+        fields = ['id', 'name', 'description', 'address', 'latitude', 'longitude']
 
-class AccessibilityMapSerializer(serializers.HyperlinkedModelSerializer):
+
+class AccessibilityMapSerializer(serializers.ModelSerializer):
+    location = AccessibilityLocationSerializer(read_only=True)
+
     class Meta:
         model = AccessibilityMap
-        fields = ['url', 'location', 'is_accessible', 'accessibility_score']
+        fields = ['id', 'location', 'is_accessible', 'accessibility_score']
 
-class JobPostingSerializer(serializers.HyperlinkedModelSerializer):
+
+class JobPostingSerializer(serializers.ModelSerializer):
+    location = AccessibilityLocationSerializer(read_only=True)
+
     class Meta:
         model = JobPosting
-        fields = ['url', 'title', 'description', 'location', 'posted_date', 'is_active']
+        fields = [
+            'id', 'job_id', 'title', 'description',
+            'location_text', 'location',
+            'company_name', 'company_profile', 'company_logo_url',
+            'job_link', 'posted_date', 'is_active', 'source'
+        ]
 
-class HealthcareFacilitySerializer(serializers.HyperlinkedModelSerializer):
+
+class HealthcareFacilitySerializer(serializers.ModelSerializer):
+    location = AccessibilityLocationSerializer(read_only=True)
+
     class Meta:
         model = HealthcareFacility
-        fields = ['url', 'name', 'description', 'address', 'location', 'contact_number', 'website']
+        fields = [
+            'id', 'place_id', 'name', 'description', 'address',
+            'location', 'latitude', 'longitude',
+            'contact_number', 'website',
+            'rating', 'reviews_count', 'open_state', 'hours'
+        ]
