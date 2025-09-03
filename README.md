@@ -16,7 +16,7 @@ npm run dev
 #### Data Format:
 -none yet
 
-### Job-Postings : "http://127.0.0.1:8000/api/job-postings/"
+### Job-Postings : "http://127.0.0.1:8000/api/jobpostings/"
 #### Data Format:
 ```JSON
 [
