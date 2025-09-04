@@ -40,6 +40,8 @@ const resources = [
     icon: "🏥",
     link: "/healthcare"
   },
+
+  /*remove community forum
   {
     id: 4,
     title: "Community Forum",
@@ -47,7 +49,8 @@ const resources = [
     description: "Connect with others and share experiences",
     icon: "👥",
     link: "/forum"
-  },
+  },*/
+
   {
     id: 5,
     title: "Accessibility Map",
@@ -56,6 +59,7 @@ const resources = [
     icon: "🗺️",
     link: "/map"
   },
+  /*
   {
     id: 6,
     title: "Legal Rights Info",
@@ -64,6 +68,7 @@ const resources = [
     icon: "⚖️",
     link: "/legal"
   }
+    */
 ]
 
 function Home() {
@@ -79,8 +84,8 @@ function Home() {
     { id: 'education', name: 'Education', icon: '📚' },
     { id: 'jobs', name: 'Jobs', icon: '💼' },
     { id: 'healthcare', name: 'Healthcare', icon: '🏥' },
-    { id: 'tools', name: 'Tools', icon: '🛠️' },
-    { id: 'community', name: 'Community', icon: '👥' }
+    // id: 'tools', name: 'Tools', icon: '🛠️' },
+    //{ id: 'community', name: 'Community', icon: '👥' }
   ]
 
   const handleExploreClick = () => {
