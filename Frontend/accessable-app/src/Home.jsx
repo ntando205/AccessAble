@@ -16,14 +16,7 @@ function Logo({ size = 60 }) {
 
 // Resource Data
 const resources = [
-  {
-    id: 1,
-    title: "Accessibility Guide",
-    category: "education",
-    description: "Comprehensive guide to accessibility standards and best practices",
-    icon: "📚",
-    link: "/resources/guide"
-  },
+  
   {
     id: 2,
     title: "Job Search Toolkit",
@@ -41,16 +34,6 @@ const resources = [
     link: "/healthcare"
   },
 
-  /*remove community forum
-  {
-    id: 4,
-    title: "Community Forum",
-    category: "community",
-    description: "Connect with others and share experiences",
-    icon: "👥",
-    link: "/forum"
-  },*/
-
   {
     id: 5,
     title: "Accessibility Map",
@@ -59,16 +42,6 @@ const resources = [
     icon: "🗺️",
     link: "/map"
   },
-  /*
-  {
-    id: 6,
-    title: "Legal Rights Info",
-    category: "education",
-    description: "Understand your rights and protections",
-    icon: "⚖️",
-    link: "/legal"
-  }
-    */
 ]
 
 function Home() {
@@ -81,11 +54,8 @@ function Home() {
 
   const categories = [
     { id: 'all', name: 'All Resources', icon: '🌟' },
-    { id: 'education', name: 'Education', icon: '📚' },
     { id: 'jobs', name: 'Jobs', icon: '💼' },
-    { id: 'healthcare', name: 'Healthcare', icon: '🏥' },
-    // id: 'tools', name: 'Tools', icon: '🛠️' },
-    //{ id: 'community', name: 'Community', icon: '👥' }
+    { id: 'healthcare', name: 'Healthcare', icon: '🏥' }
   ]
 
   const handleExploreClick = () => {
