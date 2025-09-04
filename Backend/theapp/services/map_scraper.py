@@ -1,7 +1,7 @@
 import requests
 from ..models import AccessibilityLocation, HealthcareFacility
 
-def fetch_and_save_healthcare_data(query="healthcare for the blind"):
+def fetch_and_save_healthcare_data(query="healthcare for the blind in Gauteng, South Africa"):
     api_key = "68b85a6dd8a6124ad5827ce1"  # (better: put in settings.py)
     url = "https://api.scrapingdog.com/google_maps"
 

@@ -39,15 +39,15 @@ export default function GoogleMapComponent() {
       .catch(err => console.error(err));
 
     // Fetch job postings
-    axios.get("http://127.0.0.1:8000/api/jobpostings/")
-      .then(res => {
-        console.log("Job postings with coordinates:", 
-          res.data.results.filter(j => j.location?.latitude && j.location?.longitude && j.location.latitude !== 0 && j.location.longitude !== 0)
-        );
-        setJobPostings(res.data.results);
-      })
-      .catch(err => console.error(err));
-  }, []);
+  //   axios.get("http://127.0.0.1:8000/api/jobpostings/")
+  //     .then(res => {
+  //       console.log("Job postings with coordinates:", 
+  //         res.data.results.filter(j => j.location?.latitude && j.location?.longitude && j.location.latitude !== 0 && j.location.longitude !== 0)
+  //       );
+  //       setJobPostings(res.data.results);
+  //     })
+  //     .catch(err => console.error(err));
+  // }, []);
 
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading Maps...</div>;
@@ -80,7 +80,7 @@ export default function GoogleMapComponent() {
             />
           ))}
 
-        {/* Job Markers - only show those with valid coordinates */}
+        {/* Job Markers - only show those with valid coordinates
         {jobPostings
           .filter(j => j.location?.latitude && j.location?.longitude && j.location.latitude !== 0 && j.location.longitude !== 0)
           .map((j, index) => (
@@ -97,6 +97,21 @@ export default function GoogleMapComponent() {
                   lat: Number(j.location.latitude),
                   lng: Number(j.location.longitude)
                 });
+              }}
+            />
+          ))} */}
+
+          {/* Test markers in Johannesburg */}
+          {[
+            {lat: -26.2041, lng: 28.0473, title: "Test Marker 1 - Johannesburg"},
+            {lat: -26.1941, lng: 28.0573, title: "Test Marker 2 - Johannesburg"},
+          ].map((marker, index) => (
+            <Marker
+              key={`test-${index}`}
+              position={{lat: marker.lat, lng: marker.lng}}
+              onClick={() => {
+                setSelectedMarker({title: marker.title, type: 'test'});
+                setMapCenter({lat: marker.lat, lng: marker.lng});
               }}
             />
           ))}
@@ -165,3 +180,158 @@ export default function GoogleMapComponent() {
     </div>
   );
 }
+
+
+
+// import { useState, useEffect } from "react";
+
+// const LocationDataComponent = () => {
+//   const [jobPostings, setJobPostings] = useState([]);
+//   const [healthcareFacilities, setHealthcareFacilities] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         setLoading(true);
+        
+//         // Fetch job postings data
+//         const jobsResponse = await fetch("http://127.0.0.1:8000/api/jobpostings/");
+//         const jobsData = await jobsResponse.json();
+        
+//         // Fetch healthcare facilities data
+//         const healthcareResponse = await fetch("http://127.0.0.1:8000/api/healthcare-facilities/");
+//         const healthcareData = await healthcareResponse.json();
+        
+//         setJobPostings(jobsData.results || []);
+//         setHealthcareFacilities(healthcareData.results || []);
+        
+//       } catch (err) {
+//         setError("Failed to fetch data");
+//         console.error("Error fetching data:", err);
+//       } finally {
+//         setLoading(false);
+//       } axios.get("http://127.0.0.1:8000/api/jobpostings/")
+  //     .then(res => {
+  //       console.log("Job postings with coordinates:", 
+  //         res.data.results.filter(j => j.location?.latitude && j.location?.longitude && j.location.latitude !== 0 && j.location.longitude !== 0)
+  //       );
+  //       setJobPostings(res.data.results);
+  //     })
+  //     .catch(err => console.error(err));
+  // }, []);
+//     };
+
+//     fetchData();
+//   }, []);
+
+//   // Function to extract coordinates from job postings
+//   const getJobCoordinates = (job) => {
+//     return {
+//       id: job.id || job.job_id,
+//       title: job.title,
+//       company: job.company_name,
+//       locationText: job.location_text,
+//       latitude: job.location?.latitude || 0,
+//       longitude: job.location?.longitude || 0,
+//       hasValidCoordinates: job.location?.latitude !== 0 && job.location?.longitude !== 0
+//     };
+//   };
+
+//   // Function to extract coordinates from healthcare facilities
+//   const getHealthcareCoordinates = (facility) => {
+//     return {
+//       id: facility.id || facility.place_id,
+//       name: facility.name,
+//       address: facility.address,
+//       latitude: facility.latitude || facility.location?.latitude || 0,
+//       longitude: facility.longitude || facility.location?.longitude || 0,
+//       hasValidCoordinates: (facility.latitude !== 0 && facility.longitude !== 0) || 
+//                           (facility.location?.latitude !== 0 && facility.location?.longitude !== 0)
+//     };
+//   };
+
+//   if (loading) return <div>Loading data...</div>;
+//   if (error) return <div>Error: {error}</div>;
+
+//   return (
+//     <div>
+//       <h2>Location Coordinates</h2>
+      
+//       {/* Job Postings Coordinates */}
+//       <div>
+//         <h3>Job Postings Coordinates ({jobPostings.length} jobs)</h3>
+//         <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px'}}>
+//           {jobPostings.map(job => {
+//             const coords = getJobCoordinates(job);
+//             return (
+//               <div key={coords.id} style={{
+//                 border: '1px solid #ccc', 
+//                 padding: '10px', 
+//                 borderRadius: '5px',
+//                 backgroundColor: coords.hasValidCoordinates ? '#e8f5e8' : '#ffe6e6'
+//               }}>
+//                 <strong>{coords.title}</strong>
+//                 <p>Company: {coords.company}</p>
+//                 <p>Location: {coords.locationText}</p>
+//                 <p>Latitude: {coords.latitude}</p>
+//                 <p>Longitude: {coords.longitude}</p>
+//                 <p style={{color: coords.hasValidCoordinates ? 'green' : 'red'}}>
+//                   {coords.hasValidCoordinates ? 'Valid Coordinates' : 'Invalid Coordinates (0,0)'}
+//                 </p>
+//               </div>
+//             );
+//           })}
+//         </div>
+//       </div>
+
+//       {/* Healthcare Facilities Coordinates */}
+//       <div style={{marginTop: '20px'}}>
+//         <h3>Healthcare Facilities Coordinates ({healthcareFacilities.length} facilities)</h3>
+//         <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px'}}>
+//           {healthcareFacilities.map(facility => {
+//             const coords = getHealthcareCoordinates(facility);
+//             return (
+//               <div key={coords.id} style={{
+//                 border: '1px solid #ccc', 
+//                 padding: '10px', 
+//                 borderRadius: '5px',
+//                 backgroundColor: coords.hasValidCoordinates ? '#e8f5e8' : '#ffe6e6'
+//               }}>
+//                 <strong>{coords.name}</strong>
+//                 <p>Address: {coords.address}</p>
+//                 <p>Latitude: {coords.latitude}</p>
+//                 <p>Longitude: {coords.longitude}</p>
+//                 <p style={{color: coords.hasValidCoordinates ? 'green' : 'red'}}>
+//                   {coords.hasValidCoordinates ? 'Valid Coordinates' : 'Invalid Coordinates'}
+//                 </p>
+//               </div>
+//             );
+//           })}
+//         </div>
+//       </div>
+
+//       {/* Summary Statistics */}
+//       <div style={{marginTop: '20px', padding: '15px', backgroundColor: '#f0f0f0', borderRadius: '5px'}}>
+//         <h3>Summary</h3>
+//         <p>Total Job Postings: {jobPostings.length}</p>
+//         <p>Jobs with Valid Coordinates: {
+//           jobPostings.filter(job => 
+//             job.location?.latitude !== 0 && job.location?.longitude !== 0
+//           ).length
+//         }</p>
+//         <p>Total Healthcare Facilities: {healthcareFacilities.length}</p>
+//         <p>Healthcare Facilities with Valid Coordinates: {
+//           healthcareFacilities.filter(facility => 
+//             (facility.latitude !== 0 && facility.longitude !== 0) || 
+//             (facility.location?.latitude !== 0 && facility.location?.longitude !== 0)
+//           ).length
+//         }</p>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default LocationDataComponent;)
+  )}

@@ -16,4 +16,7 @@ router.register(r'healthcare-facilities', views.HealthcareFacilityViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     #path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('jobs/fetch/', views.JobPostingViewSet.as_view({'post': 'fetch_jobs'}), name='fetch-jobs'),
+    path('healthcare/fetch/', views.HealthcareFacilityViewSet.as_view({'post': 'fetch_facilities'}), name='fetch-healthcare'),
 ]
+
