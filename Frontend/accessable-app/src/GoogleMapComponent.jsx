@@ -32,55 +32,65 @@ const GoogleMapComponent = () => {
   const [error, setError] = useState(null);
   const [map, setMap] = useState(null);
 
-  const api_key = import.meta.env.VITE_SCRAPINGDOG_API_KEY;
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+  // Base URL for your Django API
+  const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
   const fetchHealthcareFacilities = useCallback(async () => {
     try {
-      const url = 'https://api.scrapingdog.com/google_maps/';
-      const params = {
-        api_key: api_key,
-        query: 'healthcare facilities for disabled people in Gauteng',
-        ll: '',
-        page: 0,
-      };
-
-      const response = await axios.get(url, { params });
+      const response = await axios.get(`${API_BASE_URL}/maps/search-results-all/`);
       
       if (response.status === 200) {
-        setHealthcareData(response.data.search_results || []);
+        // Handle both possible response formats
+        let data = response.data;
+        if (data && data.search_results) {
+          setHealthcareData(data.search_results);
+        } else if (Array.isArray(data)) {
+          setHealthcareData(data);
+        } else {
+          console.warn('Unexpected healthcare data format:', data);
+          setHealthcareData([]);
+        }
       } else {
         throw new Error(`Healthcare request failed with status: ${response.status}`);
       }
     } catch (err) {
       console.error('Error fetching healthcare facilities:', err);
       setError('Failed to load healthcare facilities');
+      setHealthcareData([]);
     }
-  }, [api_key]);
+  }, [API_BASE_URL]);
 
   const fetchJobs = useCallback(async () => {
     try {
-      const url = 'https://api.scrapingdog.com/linkedinjobs/';
-      const params = {
-        api_key: api_key,
-        field: 'disability jobs in Gauteng, South Africa',
-        geoid: '',
-        location: '',
-        page: 3,
-      };
-
-      const response = await axios.get(url, { params });
+      // console.log('Fetching jobs from:', `${API_BASE_URL}/jobs/`);
+      const response = await axios.get(`${API_BASE_URL}/jobs/`);
+      // console.log('Jobs API response:', response.data);
+      // console.log('Response type:', typeof response.data);
       
       if (response.status === 200) {
-        setJobsData(response.data || []);
+        // Handle both possible response formats
+        let data = response.data;
+        if (Array.isArray(data)) {
+          setJobsData(data);
+        } else if (data && data.results) {
+          setJobsData(data.results);
+        } else if (data && Array.isArray(data.jobs)) {
+          setJobsData(data.jobs);
+        } else {
+          console.warn('Unexpected jobs data format:', data);
+          setJobsData([]);
+        }
       } else {
         throw new Error(`Jobs request failed with status: ${response.status}`);
       }
     } catch (err) {
       console.error('Error fetching jobs:', err);
       setError('Failed to load job listings');
+      setJobsData([]);
     }
-  }, [api_key]);
+  }, [API_BASE_URL]);
 
   const fetchAllData = useCallback(async () => {
     setLoading(true);
@@ -103,9 +113,9 @@ const GoogleMapComponent = () => {
   }, [fetchAllData]);
 
   const onMarkerClick = useCallback((item, markerType) => {
-  console.log('Marker clicked:', item, markerType);
-  setSelectedItem({ ...item, markerType }); // Use a different property name
-}, []);
+    console.log('Marker clicked:', item, markerType);
+    setSelectedItem({ ...item, markerType });
+  }, []);
 
   const onInfoWindowClose = useCallback(() => {
     setSelectedItem(null);
@@ -130,8 +140,12 @@ const GoogleMapComponent = () => {
       'centurion': { lat: -25.8589, lng: 28.1855 },
       'krugersdorp': { lat: -26.1015, lng: 27.8066 },
       'springs': { lat: -26.2584, lng: 28.4713 },
-      'muldersdrif': { lat: -25.9833, lng: 27.8667 }
+      'muldersdrif': { lat: -25.9833, lng: 27.8667 },
+      'gauteng': { lat: -26.2041, lng: 28.0473 },
+      'city of johannesburg': { lat: -26.2041, lng: 28.0473 }
     };
+
+    if (!jobLocation) return defaultCenter;
 
     const location = jobLocation.toLowerCase();
     for (const [key, coords] of Object.entries(locationMap)) {
@@ -151,7 +165,10 @@ const GoogleMapComponent = () => {
     );
   }
 
-  const currentData = viewMode === 'healthcare' ? healthcareData : jobsData;
+  // Ensure we're always working with arrays
+  const safeHealthcareData = Array.isArray(healthcareData) ? healthcareData : [];
+  const safeJobsData = Array.isArray(jobsData) ? jobsData : [];
+  const currentData = viewMode === 'healthcare' ? safeHealthcareData : safeJobsData;
 
   return (
     <div className="w-full">
@@ -165,7 +182,7 @@ const GoogleMapComponent = () => {
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          Healthcare Facilities
+          Healthcare Facilities ({safeHealthcareData.length})
         </button>
         <button
           onClick={() => setViewMode('jobs')}
@@ -175,7 +192,7 @@ const GoogleMapComponent = () => {
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          Disability Jobs
+          Disability Jobs ({safeJobsData.length})
         </button>
       </div>
 
@@ -200,23 +217,25 @@ const GoogleMapComponent = () => {
           onUnmount={onUnmount}
         >
           {/* Healthcare Markers */}
-          {viewMode === 'healthcare' && healthcareData.map((facility) => (
-            <Marker
-              key={`healthcare-${facility.place_id}`}
-              position={{
-                lat: facility.gps_coordinates.latitude,
-                lng: facility.gps_coordinates.longitude
-              }}
-              onClick={() => onMarkerClick(facility, 'healthcare')}
-              title={facility.title}
-              icon={markerIcons.healthcare}
-            />
+          {viewMode === 'healthcare' && safeHealthcareData.map((facility) => (
+            facility?.gps_coordinates?.latitude && facility?.gps_coordinates?.longitude && (
+              <Marker
+                key={`healthcare-${facility.place_id || facility.id || Math.random()}`}
+                position={{
+                  lat: facility.gps_coordinates.latitude,
+                  lng: facility.gps_coordinates.longitude
+                }}
+                onClick={() => onMarkerClick(facility, 'healthcare')}
+                title={facility.title}
+                icon={markerIcons.healthcare}
+              />
+            )
           ))}
 
           {/* Job Markers */}
-          {viewMode === 'jobs' && jobsData.map((job) => (
+          {viewMode === 'jobs' && safeJobsData.map((job) => (
             <Marker
-              key={`job-${job.job_id}`}
+              key={`job-${job.job_id || job.id || Math.random()}`}
               position={getCoordinatesForJob(job.job_location)}
               onClick={() => onMarkerClick(job, 'job')}
               title={job.job_position}
@@ -224,20 +243,11 @@ const GoogleMapComponent = () => {
             />
           ))}
 
-          {/* Debug info - remove in production */}
-          {selectedItem && (
-            <div className="fixed top-4 right-4 bg-white p-4 border rounded shadow-lg z-50 max-w-xs">
-              <h4 className="font-bold">Debug Info:</h4>
-              <p>Type: {selectedItem.type}</p>
-              <p>Data: {JSON.stringify(selectedItem, null, 2)}</p>
-            </div>
-          )}
-
           {/* Info Window */}
           {selectedItem && (
             <InfoWindow
               position={
-                selectedItem.markerType === 'healthcare' // Use markerType instead of type
+                selectedItem.markerType === 'healthcare' && selectedItem.gps_coordinates
                   ? {
                       lat: selectedItem.gps_coordinates.latitude,
                       lng: selectedItem.gps_coordinates.longitude
@@ -247,18 +257,24 @@ const GoogleMapComponent = () => {
               onCloseClick={onInfoWindowClose}
             >
               <div className="p-2 max-w-xs">
-                {selectedItem.markerType === 'healthcare' ? ( // Use markerType here
+                {selectedItem.markerType === 'healthcare' ? (
                   <>
                     <h3 className="font-bold text-lg mb-2 text-blue-700">{selectedItem.title}</h3>
-                    <p className="text-sm text-gray-600 mb-1">
-                      <strong>Rating:</strong> {selectedItem.rating} ⭐ ({selectedItem.reviews} reviews)
-                    </p>
-                    <p className="text-sm text-gray-600 mb-1">
-                      <strong>Type:</strong> {selectedItem.type} {/* This is the original type from API */}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-1">
-                      <strong>Address:</strong> {selectedItem.address}
-                    </p>
+                    {selectedItem.rating && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Rating:</strong> {selectedItem.rating} ⭐ ({selectedItem.reviews || 0} reviews)
+                      </p>
+                    )}
+                    {selectedItem.type && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Type:</strong> {selectedItem.type}
+                      </p>
+                    )}
+                    {selectedItem.address && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Address:</strong> {selectedItem.address}
+                      </p>
+                    )}
                     {selectedItem.phone && (
                       <p className="text-sm text-gray-600 mb-1">
                         <strong>Phone:</strong> {selectedItem.phone}
@@ -277,23 +293,54 @@ const GoogleMapComponent = () => {
                         </a>
                       </p>
                     )}
+                    {selectedItem.operating_hours && (
+                      <div className="text-sm text-gray-600 mb-1">
+                        <strong>Hours:</strong>
+                        {Object.entries(selectedItem.operating_hours).map(([day, hours]) => (
+                          hours && (
+                            <p key={day} className="ml-2 text-xs">
+                              {day.charAt(0).toUpperCase() + day.slice(1)}: {hours}
+                            </p>
+                          )
+                        ))}
+                      </div>
+                    )}
                   </>
                 ) : (
                   <>
                     <h3 className="font-bold text-lg mb-2 text-green-700">{selectedItem.job_position}</h3>
-                    <p className="text-sm text-gray-600 mb-1">
-                      <strong>Company:</strong> {selectedItem.company_name}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-1">
-                      <strong>Location:</strong> {selectedItem.job_location}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-1">
-                      <strong>Posted:</strong> {selectedItem.job_posting_date}
-                    </p>
+                    {selectedItem.company_name && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Company:</strong> {selectedItem.company_name}
+                      </p>
+                    )}
+                    {selectedItem.job_location && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Location:</strong> {selectedItem.job_location}
+                      </p>
+                    )}
+                    {selectedItem.job_posting_date && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Posted:</strong> {selectedItem.job_posting_date}
+                      </p>
+                    )}
+                    {selectedItem.company_profile && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Company Profile:</strong>{' '}
+                        <a
+                          href={selectedItem.company_profile}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          View profile
+                        </a>
+                      </p>
+                    )}
                     {selectedItem.company_logo_url && (
                       <img
                         src={selectedItem.company_logo_url}
-                        alt={selectedItem.company_name}
+                        alt={selectedItem.company_name || 'Company logo'}
                         className="w-12 h-12 mt-2 rounded"
                         onError={(e) => {
                           e.target.style.display = 'none';
@@ -322,52 +369,70 @@ const GoogleMapComponent = () => {
       <div className="mt-6">
         <h2 className="text-2xl font-bold mb-4">
           {viewMode === 'healthcare' 
-            ? 'Healthcare Facilities' 
-            : 'Jobs'
+            ? `Healthcare Facilities (${safeHealthcareData.length})` 
+            : `Jobs (${safeJobsData.length})`
           }
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {currentData.map((item) => (
-            <div
-              key={viewMode === 'healthcare' ? item.place_id : item.job_id}
-              className="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => {
-                const markerType = viewMode === 'healthcare' ? 'healthcare' : 'job';
-                onMarkerClick(item, markerType);
-                if (map) {
-                  const position = viewMode === 'healthcare'
-                    ? {
-                        lat: item.gps_coordinates.latitude,
-                        lng: item.gps_coordinates.longitude
-                      }
-                    : getCoordinatesForJob(item.job_location);
-                  
-                  map.panTo(position);
-                  map.setZoom(14);
-                }
-              }}
-            >
-              {viewMode === 'healthcare' ? (
-                <>
-                  <h3 className="font-semibold text-lg mb-2 text-blue-700">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-1">
-                    Rating: {item.rating} ⭐ ({item.reviews} reviews)
-                  </p>
-                  <p className="text-sm text-gray-600 mb-1">{item.type}</p>
-                  <p className="text-sm text-gray-600 truncate">{item.address}</p>
-                </>
-              ) : (
-                <>
-                  <h3 className="font-semibold text-lg mb-2 text-green-700">{item.job_position}</h3>
-                  <p className="text-sm text-gray-600 mb-1">{item.company_name}</p>
-                  <p className="text-sm text-gray-600 mb-1">{item.job_location}</p>
-                  <p className="text-sm text-gray-600">Posted: {item.job_posting_date}</p>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
+        {currentData.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No {viewMode === 'healthcare' ? 'healthcare facilities' : 'jobs'} found.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {currentData.map((item) => (
+              <div
+                key={viewMode === 'healthcare' ? item.place_id || item.id : item.job_id || item.id}
+                className="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => {
+                  const markerType = viewMode === 'healthcare' ? 'healthcare' : 'job';
+                  onMarkerClick(item, markerType);
+                  if (map) {
+                    const position = viewMode === 'healthcare' && item.gps_coordinates
+                      ? {
+                          lat: item.gps_coordinates.latitude,
+                          lng: item.gps_coordinates.longitude
+                        }
+                      : getCoordinatesForJob(item.job_location);
+                    
+                    map.panTo(position);
+                    map.setZoom(14);
+                  }
+                }}
+              >
+                {viewMode === 'healthcare' ? (
+                  <>
+                    <h3 className="font-semibold text-lg mb-2 text-blue-700">{item.title}</h3>
+                    {item.rating && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        Rating: {item.rating} ⭐ ({item.reviews || 0} reviews)
+                      </p>
+                    )}
+                    {item.type && (
+                      <p className="text-sm text-gray-600 mb-1">{item.type}</p>
+                    )}
+                    {item.address && (
+                      <p className="text-sm text-gray-600 truncate">{item.address}</p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <h3 className="font-semibold text-lg mb-2 text-green-700">{item.job_position}</h3>
+                    {item.company_name && (
+                      <p className="text-sm text-gray-600 mb-1">{item.company_name}</p>
+                    )}
+                    {item.job_location && (
+                      <p className="text-sm text-gray-600 mb-1">{item.job_location}</p>
+                    )}
+                    {item.job_posting_date && (
+                      <p className="text-sm text-gray-600">Posted: {item.job_posting_date}</p>
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

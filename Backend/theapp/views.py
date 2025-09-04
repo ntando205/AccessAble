@@ -1,209 +1,280 @@
-from django.shortcuts import render
-from django.contrib.auth.models import Group, User
-from rest_framework import permissions, viewsets
-from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.authtoken.models import Token
-from rest_framework.views import APIView
+from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework import status
-from .services.map_scraper import fetch_and_save_healthcare_data
-from .models import HealthcareFacility, AccessibilityLocation
+from rest_framework.decorators import api_view
+from rest_framework.reverse import reverse
+from django.db.models import Q
+from .models import JobListing, SearchResult, GPSCoordinates, OperatingHours, SearchResultType
+from .serializers import JobListingSerializer, SearchResultSerializer
+import requests
+from django.conf import settings
+from .utils import fetch_google_maps_data, fetch_linkedin_jobs
 
-api_key = "68b85a6dd8a6124ad5827ce1"
-
-
-from .serializers import *
-
-# Create your views here.
-
-
-# class TokenQueryParamAuthentication(BaseAuthentication):
-#     def authenticate(self, request):
-#         token = request.GET.get('Token')
-#         if not token:
-#             raise AuthenticationFailed('Authentication credentials were not provided.')
-        
-#         try:
-#             token_obj = Token.objects.get(key=token)
-#         except Token.DoesNotExist:
-#             raise AuthenticationFailed('Invalid token.')
-        
-#         return (token_obj.user, token_obj)
-
-class AccessibilityLocationViewSet(viewsets.ModelViewSet):
+# Job Listing Views
+class JobListingListCreateView(generics.ListCreateAPIView):
     """
-    API endpoint that allows accessibility locations to be viewed or edited.
+    View to list all job listings or create a new job listing
     """
-    queryset = AccessibilityLocation.objects.all()
-    serializer_class = AccessibilityLocationSerializer
-    #permission_classes = [permissions.IsAuthenticated]
-    #authentication_classes = [TokenQueryParamAuthentication]
+    queryset = JobListing.objects.all()
+    serializer_class = JobListingSerializer
 
-class AccessibilityMapViewSet(viewsets.ModelViewSet):
+class JobListingDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    API endpoint that allows accessibility maps to be viewed or edited.
+    View to retrieve, update or delete a specific job listing
     """
-    queryset = AccessibilityMap.objects.all()
-    serializer_class = AccessibilityMapSerializer
-    #permission_classes = [permissions.IsAuthenticated]
-    #authentication_classes = [TokenQueryParamAuthentication]
+    queryset = JobListing.objects.all()
+    serializer_class = JobListingSerializer
+    lookup_field = 'job_id'
 
-class JobPostingViewSet(viewsets.ModelViewSet):
-    queryset = JobPosting.objects.all()
-    serializer_class = JobPostingSerializer
+@api_view(['GET'])
+def job_listings_by_company(request, company_name):
+    """
+    Custom view to get job listings by company name
+    """
+    jobs = JobListing.objects.filter(company_name__icontains=company_name)
+    serializer = JobListingSerializer(jobs, many=True)
+    return Response(serializer.data)
 
-    def list(self, request, *args, **kwargs):
-        import requests
-        from datetime import datetime
-        from .models import JobPosting, AccessibilityLocation
+@api_view(['GET'])
+def job_listings_by_location(request, location):
+    """
+    Custom view to get job listings by location
+    """
+    jobs = JobListing.objects.filter(job_location__icontains=location)
+    serializer = JobListingSerializer(jobs, many=True)
+    return Response(serializer.data)
 
-        url = "https://api.scrapingdog.com/linkedinjobs"
-        params = {
-            "api_key": api_key,
-            "field": "disability jobs",
-            "location": "Johannesburg, South Africa",
-            "page": 1
-        }
+# Google Maps Search Results Views
+class SearchResultListCreateView(generics.ListCreateAPIView):
+    """
+    View to list all search results or create a new search result
+    """
+    queryset = SearchResult.objects.all().prefetch_related('types', 'gps_coordinates', 'operating_hours')
+    serializer_class = SearchResultSerializer
 
+class SearchResultDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    View to retrieve, update or delete a specific search result
+    """
+    queryset = SearchResult.objects.all().prefetch_related('types', 'gps_coordinates', 'operating_hours')
+    serializer_class = SearchResultSerializer
+    lookup_field = 'place_id'
+
+@api_view(['GET'])
+def search_results_by_type(request, type_name):
+    """
+    Custom view to get search results by type
+    """
+    results = SearchResult.objects.filter(
+        Q(type__icontains=type_name) | 
+        Q(types__type_name__icontains=type_name)
+    ).distinct().prefetch_related('types', 'gps_coordinates', 'operating_hours')
+    
+    serializer = SearchResultSerializer(results, many=True)
+    return Response({'search_results': serializer.data})
+
+@api_view(['GET'])
+def search_results_by_rating(request, min_rating):
+    """
+    Custom view to get search results with minimum rating
+    """
+    results = SearchResult.objects.filter(
+        rating__gte=float(min_rating)
+    ).prefetch_related('types', 'gps_coordinates', 'operating_hours')
+    
+    serializer = SearchResultSerializer(results, many=True)
+    return Response({'search_results': serializer.data})
+
+@api_view(['GET'])
+def all_search_results(request):
+    """
+    View to get all search results in the required response format
+    """
+    results = SearchResult.objects.all().prefetch_related('types', 'gps_coordinates', 'operating_hours')
+    serializer = SearchResultSerializer(results, many=True)
+    return Response({'search_results': serializer.data})
+
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    """
+    API root endpoint that provides links to all available endpoints
+    """
+    return Response({
+        'job_listings': {
+            'all_jobs': reverse('job-list-create', request=request, format=format),
+            'jobs_by_company': reverse('jobs-by-company', request=request, format=format, kwargs={'company_name': 'company-name'}),
+            'jobs_by_location': reverse('jobs-by-location', request=request, format=format, kwargs={'location': 'location'}),
+        },
+        'maps_search_results': {
+            'all_search_results': reverse('all-search-results', request=request, format=format),
+            'search_results_list': reverse('search-result-list-create', request=request, format=format),
+            'search_results_by_type': reverse('search-results-by-type', request=request, format=format, kwargs={'type_name': 'type-name'}),
+            'search_results_by_rating': reverse('search-results-by-rating', request=request, format=format, kwargs={'min_rating': '4.0'}),
+        },
+        'documentation': 'Visit each endpoint to see available parameters and response formats'
+    })
+
+
+@api_view(['POST'])
+def scrape_and_save_google_maps(request):
+    """
+    Scrape Google Maps data and save to database
+    """
+    query = request.data.get('query', 'healthcare facilities for disabled people')
+    location = request.data.get('location', 'Gauteng, South Africa')
+    
+    # Fetch data from ScrapingDog
+    data = fetch_google_maps_data(query, location)
+    
+    if not data or 'search_results' not in data:
+        return Response(
+            {'error': 'Failed to fetch data from ScrapingDog API'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+    saved_count = 0
+    errors = []
+    
+    for item in data['search_results']:
         try:
-            response = requests.get(url, params=params)
-            if response.status_code == 200:
-                jobs = response.json()
-                print("Fetched jobs:", len(jobs))
-
-                for j in jobs:
-                    # 🔹 Parse posted_date safely
-                    posted_date = None
-                    try:
-                        posted_date = datetime.fromisoformat(j.get("job_posting_date")).date()
-                    except Exception:
-                        pass
-
-                    #Normalize location (if only text available)
-                    location_text = j.get("job_location", "")
-                    location_obj = None
-                    if location_text:
-                        location_obj, _ = AccessibilityLocation.objects.get_or_create(
-                            name=location_text,
-                            defaults={
-                                "description": "Job location (auto-generated)",
-                                "address": location_text,
-                                "latitude": 0.0,
-                                "longitude": 0.0,
-                            }
-                        )
-
-                    #Save/update job posting
-                    JobPosting.objects.update_or_create(
-                        job_id=j.get("job_id"),
-                        defaults={
-                            "title": j.get("job_position", ""),
-                            "description": "",  # LinkedIn usually doesn't expose description via scraping
-                            "location_text": location_text,
-                            "location": location_obj,
-                            "company_name": j.get("company_name", ""),
-                            "company_profile": j.get("company_profile", ""),
-                            "company_logo_url": j.get("company_logo_url", ""),
-                            "job_link": j.get("job_link", ""),
-                            "posted_date": posted_date,
-                            "is_active": True,
-                            "source": "linkedin",
-                        }
-                    )
-
+            # Check if item already exists
+            if SearchResult.objects.filter(place_id=item.get('place_id')).exists():
+                continue
+            
+            # Create GPS coordinates
+            gps_data = item.get('gps_coordinates', {})
+            gps_coordinates = GPSCoordinates.objects.create(
+                latitude=gps_data.get('latitude', 0),
+                longitude=gps_data.get('longitude', 0)
+            )
+            
+            # Create operating hours
+            operating_hours_data = item.get('operating_hours', {})
+            operating_hours = OperatingHours.objects.create(
+                monday=operating_hours_data.get('monday'),
+                tuesday=operating_hours_data.get('tuesday'),
+                wednesday=operating_hours_data.get('wednesday'),
+                thursday=operating_hours_data.get('thursday'),
+                friday=operating_hours_data.get('friday'),
+                saturday=operating_hours_data.get('saturday'),
+                sunday=operating_hours_data.get('sunday')
+            )
+            
+            # Create search result
+            search_result = SearchResult.objects.create(
+                title=item.get('title', ''),
+                place_id=item.get('place_id', ''),
+                data_id=item.get('data_id'),
+                data_cid=item.get('data_cid'),
+                reviews_link=item.get('reviews_link'),
+                photos_link=item.get('photos_link'),
+                posts_link=item.get('posts_link'),
+                gps_coordinates=gps_coordinates,
+                provider_id=item.get('provider_id'),
+                rating=item.get('rating'),
+                reviews=item.get('reviews'),
+                type=item.get('type'),
+                address=item.get('address'),
+                open_state=item.get('open_state'),
+                hours=item.get('hours'),
+                operating_hours=operating_hours,
+                phone=item.get('phone'),
+                website=item.get('website'),
+                thumbnail=item.get('thumbnail'),
+                image=item.get('image'),
+                google_maps_url=item.get('google_maps_url'),
+                unclaimed_business=item.get('unclaimed_business', False)
+            )
+            
+            # Create types
+            types_list = item.get('types', [])
+            for type_name in types_list:
+                SearchResultType.objects.create(
+                    search_result=search_result,
+                    type_name=type_name
+                )
+            
+            saved_count += 1
+            
         except Exception as e:
-            print("Job fetch failed:", e)
+            errors.append(f"Error saving item {item.get('title')}: {str(e)}")
+            continue
+    
+    return Response({
+        'message': f'Successfully saved {saved_count} items',
+        'errors': errors,
+        'total_fetched': len(data['search_results'])
+    })
 
-        # Always return everything in DB
-        queryset = JobPosting.objects.all()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-
-class HealthcareFacilityViewSet(viewsets.ModelViewSet):
-    queryset = HealthcareFacility.objects.all()
-    serializer_class = HealthcareFacilitySerializer
-
-    # inside HealthcareFacilityViewSet.list()
-
-
-    def list(self, request, *args, **kwargs):
-        import requests
-
-        url = "https://api.scrapingdog.com/google_maps"
-        params = {
-            "api_key": api_key,
-            "query": "healthcare for the blind",
-            "page": 0
-        }
-
+@api_view(['POST'])
+def scrape_and_save_linkedin_jobs(request):
+    """
+    Scrape LinkedIn Jobs data and save to database
+    """
+    query = request.data.get('query', 'disability jobs')
+    location = request.data.get('location', 'Gauteng, South Africa')
+    
+    # Fetch data from ScrapingDog
+    data = fetch_linkedin_jobs(query, location)
+    
+    if not data or not isinstance(data, list):
+        return Response(
+            {'error': 'Failed to fetch data from ScrapingDog API or invalid response format'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+    saved_count = 0
+    errors = []
+    
+    for item in data:
         try:
-            response = requests.get(url, params=params)
-            if response.status_code == 200:
-                data = response.json()
-                facilities = data.get("search_results", [])
-                print("Fetched facilities:", len(facilities))
-
-                for f in facilities:
-                    lat = f.get("gps_coordinates", {}).get("latitude")
-                    lon = f.get("gps_coordinates", {}).get("longitude")
-
-                    # 1️⃣ create or update AccessibilityLocation first
-                    location_obj, _ = AccessibilityLocation.objects.update_or_create(
-                        name=f.get("title", ""),
-                        address=f.get("address", ""),
-                        defaults={
-                            "description": f.get("type", ""),
-                            "latitude": lat if lat else 0,
-                            "longitude": lon if lon else 0,
-                        }
-                    )
-
-                    # 2️⃣ then create/update HealthcareFacility linked to that location
-                    HealthcareFacility.objects.update_or_create(
-                        place_id=f.get("place_id"),
-                        defaults={
-                            "name": f.get("title", ""),
-                            "description": f.get("type", ""),
-                            "address": f.get("address", ""),
-                            "location": location_obj,
-                            "latitude": lat if lat else 0,
-                            "longitude": lon if lon else 0,
-                            "contact_number": f.get("phone", ""),
-                            "website": f.get("website", ""),
-                            "rating": f.get("rating"),
-                            "reviews_count": f.get("reviews"),
-                            "open_state": f.get("open_state"),
-                            "hours": f.get("operating_hours", {}),
-                        }
-                    )
-
+            # Check if item already exists
+            if JobListing.objects.filter(job_id=item.get('job_id')).exists():
+                continue
+            
+            # Create job listing
+            job_listing = JobListing.objects.create(
+                job_position=item.get('job_position', ''),
+                job_link=item.get('job_link', ''),
+                job_id=item.get('job_id', ''),
+                company_name=item.get('company_name', ''),
+                company_profile=item.get('company_profile', ''),
+                job_location=item.get('job_location', ''),
+                job_posting_date=item.get('job_posting_date'),
+                company_logo_url=item.get('company_logo_url')
+            )
+            
+            saved_count += 1
+            
         except Exception as e:
-            print("Healthcare fetch failed:", e)
+            errors.append(f"Error saving job {item.get('job_position')}: {str(e)}")
+            continue
+    
+    return Response({
+        'message': f'Successfully saved {saved_count} jobs',
+        'errors': errors,
+        'total_fetched': len(data)
+    })
 
-        # ✅ always return everything in DB
-        queryset = HealthcareFacility.objects.all()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-
-class UserViewSet(viewsets.ModelViewSet):
+@api_view(['POST'])
+def scrape_all_data(request):
     """
-    API endpoint that allows users to be viewed or edited.
+    Scrape both Google Maps and LinkedIn Jobs data
     """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-    #permission_classes = [permissions.IsAuthenticated]
-    #authentication_classes = [TokenQueryParamAuthentication]
-
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = Group.objects.all().order_by('name')
-    serializer_class = GroupSerializer
-    #permission_classes = [permissions.IsAuthenticated]
-    #authentication_classes = [TokenQueryParamAuthentication]
+    google_maps_query = request.data.get('google_maps_query', 'healthcare facilities for disabled people')
+    linkedin_query = request.data.get('linkedin_query', 'disability jobs')
+    location = request.data.get('location', 'Gauteng, South Africa')
+    
+    # Scrape Google Maps data
+    google_response = scrape_and_save_google_maps(request._request)
+    google_data = google_response.data if hasattr(google_response, 'data') else {}
+    
+    # Scrape LinkedIn Jobs data
+    linkedin_response = scrape_and_save_linkedin_jobs(request._request)
+    linkedin_data = linkedin_response.data if hasattr(linkedin_response, 'data') else {}
+    
+    return Response({
+        'google_maps': google_data,
+        'linkedin_jobs': linkedin_data,
+        'message': 'Scraping completed'
+    })
