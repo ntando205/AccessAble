@@ -1,0 +1,124 @@
+/* Container for the whole section */
+.resources-section {
+  padding: 5rem 2rem;
+  background: #ffffff;
+  border-top: 1px solid #eaeaea;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Centered container for content */
+.resources-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Section title */
+.resources-container h2 {
+  text-align: center;
+  font-size: 2.8rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+/* Subtitle below title */
+.resources-subtitle {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Search input / category filter */
+.category-filters {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.category-btn {
+  padding: 1rem 1.5rem;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  border-radius: 50px;
+  cursor: text; /* input style */
+  font-weight: 600;
+  font-size: 0.95rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Grid layout for facility cards */
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+/* Individual facility card */
+.resource-card {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid #eaeaea;
+  animation: fadeIn 0.8s ease-out;
+}
+
+/* Hover effect for cards */
+.resource-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  background: white;
+}
+
+/* Icon at the top of the card */
+.resource-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+/* Card title */
+.resource-card h3 {
+  font-size: 1.4rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Card text */
+.resource-card p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .resources-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .category-btn {
+    max-width: 100%;
+  }
+}
