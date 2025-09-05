@@ -90,5 +90,6 @@ npm run dev
             "google_maps_url": "https://www.google.com/maps/place/Hope+Convalescent+Home+(Children)+&+Hope+Training+Home/@-26.164769399999997,28.024463899999997,NaN/data=!3m1!1e3!4m6!3m5!1s0x1e950c7bffffffff:0xc347a9ee7da853da!8m2!3d-26.164769399999997!4d28.024463899999997!16s",
             "unclaimed_business": true
         },
+    ]
 }
 ```
