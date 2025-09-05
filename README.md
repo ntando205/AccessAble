@@ -16,78 +16,79 @@ npm run dev
 #### Data Format:
 -none yet
 
-### Job-Postings : "http://127.0.0.1:8000/api/jobpostings/"
+### Job-Postings : "(http://127.0.0.1:8000/api/jobs/)"
 #### Data Format:
 ```JSON
-{
-    "count": 11,
-    "next": "http://127.0.0.1:8000/api/jobpostings/?page=2",
-    "previous": null,
-    "results": [
+[
         {
-            "id": 1,
-            "job_id": "4294398666",
-            "title": "Office Manager, RSA",
-            "description": "",
-            "location_text": "City of Johannesburg, Gauteng, South Africa",
-            "location": {
-                "id": 8,
-                "name": "City of Johannesburg, Gauteng, South Africa",
-                "description": "Job location (auto-generated)",
-                "address": "City of Johannesburg, Gauteng, South Africa",
-                "latitude": 0.0,
-                "longitude": 0.0
-            },
-            "company_name": "Dandy",
-            "company_profile": "https://www.linkedin.com/company/dandyofficial?trk=public_jobs_jserp-result_job-search-card-subtitle",
-            "company_logo_url": "https://media.licdn.com/dms/image/v2/C4E0BAQGbpEfk4uSBzQ/company-logo_100_100/company-logo_100_100/0/1669005247358/dandyofficial_logo?e=2147483647&v=beta&t=jYc-9oCwHTuVgwCsVpBAATM_MdVKKBQui1F5zjvoBZo",
-            "job_link": "https://za.linkedin.com/jobs/view/office-manager-rsa-at-dandy-4294398666?position=1&pageNum=0&refId=p8AFagsEbwAzJbMHQFEIGQ%3D%3D&trackingId=cCJ7IX4wxkuCl7fUU6oztQ%3D%3D",
-            "posted_date": "2025-09-02",
-            "is_active": true,
-            "source": "linkedin"
+            "job_position": "Private Service Advisor",
+            "job_link": "https://za.linkedin.com/jobs/view/private-service-advisor-at-fnb-south-africa-4269210745?position=2&pageNum=0&refId=IVIR9mNN5e%2FFvejXKIegYQ%3D%3D&trackingId=M9P2lyv31UJ9iATi8ode1g%3D%3D",
+            "job_id": "4269210745",
+            "company_name": "FNB South Africa",
+            "company_profile": "https://za.linkedin.com/company/fnbsa?trk=public_jobs_jserp-result_job-search-card-subtitle",
+            "job_location": "Johannesburg, Gauteng, South Africa",
+            "job_posting_date": "2025-09-04",
+            "company_logo_url": "https://media.licdn.com/dms/image/v2/D4D0BAQFB5cMJvCFFdg/company-logo_100_100/B4DZXa8Bd4HwAQ-/0/1743134923343/fnbsa_logo?e=2147483647&v=beta&t=igFq7IlGdztrlX06ofYQC1cjEfQ0I128vpskF7RMQ5c"
+        },
+        {
+            "job_position": "Sales Advisor",
+            "job_link": "https://za.linkedin.com/jobs/view/sales-advisor-at-fnb-south-africa-4278217161?position=3&pageNum=0&refId=IVIR9mNN5e%2FFvejXKIegYQ%3D%3D&trackingId=2uaRz%2B7y8%2BmK%2B%2FuLfbSGtA%3D%3D",
+            "job_id": "4278217161",
+            "company_name": "FNB South Africa",
+            "company_profile": "https://za.linkedin.com/company/fnbsa?trk=public_jobs_jserp-result_job-search-card-subtitle",
+            "job_location": "Randburg, Gauteng, South Africa",
+            "job_posting_date": "2025-09-04",
+            "company_logo_url": "https://media.licdn.com/dms/image/v2/D4D0BAQFB5cMJvCFFdg/company-logo_100_100/B4DZXa8Bd4HwAQ-/0/1743134923343/fnbsa_logo?e=2147483647&v=beta&t=igFq7IlGdztrlX06ofYQC1cjEfQ0I128vpskF7RMQ5c"
         },
         ]
-}
 ```
-### Healthcare-Facilities : "http://127.0.0.1:8000/api/healthcare-facilities/"
+### Healthcare-Facilities : "http://127.0.0.1:8000/api/maps/search-results-all/"
 #### Data Format:
 ```JSON
 {
-    "count": 93,
-    "next": "http://127.0.0.1:8000/api/healthcare-facilities/?page=2",
-    "previous": null,
-    "results": [
+    "search_results": [
         {
-            "id": 1,
-            "place_id": "ChIJ45OTCvNZwokRseRdDCdHBrc",
-            "name": "VISIONS/Services for the Blind and Visually Impaired",
-            "description": "Non-profit organization",
-            "address": "500 Greenwich St Suite 302,New York, NY 10013",
-            "location": {
-                "id": 1,
-                "name": "VISIONS/Services for the Blind and Visually Impaired",
-                "description": "Non-profit organization",
-                "address": "500 Greenwich St Suite 302,New York, NY 10013",
-                "latitude": 40.725520499999995,
-                "longitude": -74.009383
+            "title": "Hope Convalescent Home (Children) & Hope Training Home",
+            "place_id": "ChIJ_____3sMlR4R2lOofe6pR8M",
+            "data_id": "0x1e950c7bffffffff:0xc347a9ee7da853da",
+            "data_cid": "-4375341671191653414",
+            "reviews_link": "https://api.scrapingdog.com/google_maps/reviews?api_key=68ba128919083f73e724aaa0&data_id=0x1e950c7bffffffff:0xc347a9ee7da853da",
+            "photos_link": "https://api.scrapingdog.com/google_maps/photos?api_key=68ba128919083f73e724aaa0&data_id=0x1e950c7bffffffff:0xc347a9ee7da853da",
+            "posts_link": "https://api.scrapingdog.com/google_maps/posts?api_key=68ba128919083f73e724aaa0&data_id=0x1e950c7bffffffff:0xc347a9ee7da853da",
+            "gps_coordinates": {
+                "latitude": -26.164769399999997,
+                "longitude": 28.024463899999997
             },
-            "latitude": 40.725520499999995,
-            "longitude": -74.009383,
-            "contact_number": "+12126251616",
-            "website": "http://www.visionsvcb.org/",
-            "rating": 3.3,
-            "reviews_count": 10,
-            "open_state": "Closed ⋅ Opens 9 AM Thu",
-            "hours": {
-                "wednesday": "9 AM–5 PM",
-                "thursday": "9 AM–5 PM",
-                "friday": "9 AM–5 PM",
-                "saturday": "Closed",
-                "sunday": "Closed",
-                "monday": "9 AM–5 PM",
-                "tuesday": "9 AM–5 PM"
-            }
+            "provider_id": "/g/11b5yt6_pt",
+            "rating": 5.0,
+            "reviews": 2,
+            "type": "Nursing home",
+            "types": [
+                {
+                    "type_name": "Nursing home"
+                },
+                {
+                    "type_name": "Training center"
+                }
+            ],
+            "address": "36 Pallinghurst Road, Westcliffe,Randburg,2193,South Africa",
+            "open_state": null,
+            "hours": null,
+            "operating_hours": {
+                "monday": null,
+                "tuesday": null,
+                "wednesday": null,
+                "thursday": null,
+                "friday": null,
+                "saturday": null,
+                "sunday": null
+            },
+            "phone": "+27116465810",
+            "website": null,
+            "thumbnail": null,
+            "image": null,
+            "google_maps_url": "https://www.google.com/maps/place/Hope+Convalescent+Home+(Children)+&+Hope+Training+Home/@-26.164769399999997,28.024463899999997,NaN/data=!3m1!1e3!4m6!3m5!1s0x1e950c7bffffffff:0xc347a9ee7da853da!8m2!3d-26.164769399999997!4d28.024463899999997!16s",
+            "unclaimed_business": true
         },
-        ]
 }
 ```
