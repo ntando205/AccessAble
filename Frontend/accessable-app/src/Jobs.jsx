@@ -8,24 +8,24 @@ function Jobs() {
     title: "Web Developer", 
     type: "Tech", 
     description: "Build and maintain accessible websites.",
-    company: "Tech4All",
-    contact: "+1234567890",
+    company: "Mediro ICT Recruitment",
+    contact: "+27 12 657 0704",
     applyUrl: "https://www.pnet.co.za/jobs/junior%20web%20developer?&cid=SEA_GO_ZA-PNET-DIS2---B%7C%5BA%5D_c_junior%20web%20developer--%7CJBT08312--_junior%20web%20developer%20jobs_RL_rsa&gad_source=1&gad_campaignid=21785989331&gclid=Cj0KCQjw8eTFBhCXARIsAIkiuOweIKLw6L-VMapWJZvK6PJm60fH-zzX-MKE97tf1weX2-6K0VauOfEaAnxUEALw_wcB"
   },
   { 
     title: "Nurse", 
     type: "Healthcare", 
     description: "Assist patients with daily care and medical needs.",
-    company: "HealthCare Co.",
-    contact: "+1987654321",
+    company: "Netcare",
+    contact: "+27 11 301 0000",
     applyUrl: "https://www.netcare.co.za/Nursing-registration-form"
   },
   { 
     title: "Teacher", 
     type: "Education", 
     description: "Teach inclusive classes for students with diverse needs.",
-    company: "Inclusive Academy",
-    contact: "+1122334455",
+    company: "Gauteng Department of Education",
+    contact: "+27 80 000 0789",
     applyUrl: "https://unemployededucators.gauteng.gov.za/Vacancy/Vacancy.aspx"
   }
   ]);
